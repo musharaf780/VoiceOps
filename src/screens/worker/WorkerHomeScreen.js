@@ -1,3 +1,13 @@
+import { Feather } from '@expo/vector-icons';
+import { Asset } from 'expo-asset';
+import {
+  RecordingPresets,
+  requestRecordingPermissionsAsync,
+  setAudioModeAsync,
+  useAudioPlayer,
+  useAudioPlayerStatus,
+  useAudioRecorder,
+} from 'expo-audio';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Animated,
@@ -9,23 +19,25 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import {
-  RecordingPresets,
-  requestRecordingPermissionsAsync,
-  setAudioModeAsync,
-  useAudioPlayer,
-  useAudioPlayerStatus,
-  useAudioRecorder,
-} from 'expo-audio';
-import { Feather } from '@expo/vector-icons';
 import MetricCard from '../../components/MetricCard';
 import RecordButton from '../../components/RecordButton';
 import ReportCard from '../../components/ReportCard';
 import WaveformVisualizer from '../../components/WaveformVisualizer';
 import { useAuth } from '../../context/AuthProvider';
 import { REPORTS, WORKER } from '../../data';
+import { transcribeAudio } from '../../lib/whisper';
 import { colors } from '../../theme/colors';
 import { fonts } from '../../theme/typography';
+
+// In dev, send the bundled sample instead of the actual recording
+async function getAudioUriForTranscription(recordedUri) {
+  if (__DEV__) {
+    const asset = Asset.fromModule(require('../../../assets/sample-audio.mp3'));
+    await asset.downloadAsync();
+    return asset.localUri;
+  }
+  return recordedUri;
+}
 
 function getGreeting() {
   const hour = new Date().getHours();
@@ -53,6 +65,9 @@ export default function WorkerHomeScreen({ navigation }) {
   const [elapsed, setElapsed] = useState(0);
   const [recordingUri, setRecordingUri] = useState(null);
   const [savedDuration, setSavedDuration] = useState(0);
+  const [transcription, setTranscription] = useState('');
+  const [transcribing, setTranscribing] = useState(false);
+  const [transcribeError, setTranscribeError] = useState('');
 
   const contentOpacity = useRef(new Animated.Value(1)).current;
   const timerRef = useRef(null);
@@ -68,7 +83,11 @@ export default function WorkerHomeScreen({ navigation }) {
   );
   const sampleStatus = useAudioPlayerStatus(samplePlayer);
 
-  // Reset opacity when returning to idle
+  useEffect(() => {
+    setAudioModeAsync({ playsInSilentMode: true, shouldRouteThroughEarpiece: false });
+    return () => clearInterval(timerRef.current);
+  }, []);
+
   useEffect(() => {
     if (recordingState === 'idle') {
       Animated.timing(contentOpacity, {
@@ -96,6 +115,7 @@ export default function WorkerHomeScreen({ navigation }) {
     setRecordingState('processing');
     doFadeIn();
 
+    let uri = null;
     try {
       await audioRecorder.stop();
       await setAudioModeAsync({
@@ -103,16 +123,32 @@ export default function WorkerHomeScreen({ navigation }) {
         allowsRecording: false,
         shouldRouteThroughEarpiece: false,
       });
-      if (audioRecorder.uri) {
-        setRecordingUri(audioRecorder.uri);
-        player.replace({ uri: audioRecorder.uri });
+      uri = audioRecorder.uri ?? null;
+      if (uri) {
+        setRecordingUri(uri);
+        player.replace({ uri });
       }
-    } catch {}
+    } catch { }
 
     setRecordingState('recorded');
+
+    // Transcribe in background after UI transitions to recorded state
+    setTranscription('');
+    setTranscribeError('');
+    setTranscribing(true);
+    try {
+      const audioUri = await getAudioUriForTranscription(uri);
+      const text = await transcribeAudio(audioUri);
+      setTranscription(text);
+    } catch (e) {
+      setTranscribeError(e.message ?? 'Transcription failed');
+    } finally {
+      setTranscribing(false);
+    }
   }, [audioRecorder, doFadeIn, player]);
 
-  // Auto-stop at the 60-second limit
+
+
   useEffect(() => {
     if (elapsed >= 60 && recordingState === 'recording') {
       stopRecording();
@@ -132,6 +168,8 @@ export default function WorkerHomeScreen({ navigation }) {
     isStopping.current = false;
     setElapsed(0);
     elapsedRef.current = 0;
+    setTranscription('');
+    setTranscribeError('');
     setRecordingState('recording');
 
     Animated.timing(contentOpacity, {
@@ -148,22 +186,11 @@ export default function WorkerHomeScreen({ navigation }) {
       });
     }, 1000);
 
-    // useAudioRecorder auto-prepares on mount and remains prepared after stop(),
-    // so prepareToRecordAsync will throw if called twice — safe to ignore
     try {
       await audioRecorder.prepareToRecordAsync();
-    } catch {}
+    } catch { }
     audioRecorder.record();
   }, [audioRecorder, contentOpacity]);
-
-  useEffect(() => {
-    // Route audio to speaker on both platforms
-    setAudioModeAsync({
-      playsInSilentMode: true,
-      shouldRouteThroughEarpiece: false,
-    });
-    return () => clearInterval(timerRef.current);
-  }, []);
 
   const discard = useCallback(() => {
     player.pause();
@@ -172,6 +199,8 @@ export default function WorkerHomeScreen({ navigation }) {
     setSavedDuration(0);
     setElapsed(0);
     elapsedRef.current = 0;
+    setTranscription('');
+    setTranscribeError('');
     setRecordingState('idle');
   }, [player, samplePlayer]);
 
@@ -185,6 +214,8 @@ export default function WorkerHomeScreen({ navigation }) {
   const isProcessing = recordingState === 'processing';
   const isRecorded = recordingState === 'recorded';
 
+  console.log(transcription)
+
   return (
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.bgPrimary} />
@@ -193,7 +224,6 @@ export default function WorkerHomeScreen({ navigation }) {
         contentContainerStyle={styles.content}
         scrollEnabled={!isRecording}
       >
-        {/* Top section — fades during recording */}
         <Animated.View
           style={{ opacity: contentOpacity }}
           pointerEvents={isRecording ? 'none' : 'auto'}
@@ -215,7 +245,6 @@ export default function WorkerHomeScreen({ navigation }) {
           </View>
         </Animated.View>
 
-        {/* Record area — always fully visible */}
         <View style={styles.recordArea}>
           {!isRecorded ? (
             <>
@@ -263,7 +292,7 @@ export default function WorkerHomeScreen({ navigation }) {
                   if (sampleStatus.playing) {
                     samplePlayer.pause();
                   } else {
-                    try { await samplePlayer.seekTo(0); } catch {}
+                    try { await samplePlayer.seekTo(0); } catch { }
                     samplePlayer.play();
                   }
                 }}
@@ -277,6 +306,22 @@ export default function WorkerHomeScreen({ navigation }) {
                   {sampleStatus.playing ? 'Pause' : 'Play sample'}
                 </Text>
               </Pressable>
+
+              {/* Transcription area */}
+              <View style={styles.transcriptBox}>
+                {transcribing && (
+                  <View style={styles.transcriptRow}>
+                    <Feather name="loader" size={13} color={colors.textTertiary} />
+                    <Text style={styles.transcriptLoading}>Transcribing…</Text>
+                  </View>
+                )}
+                {!!transcription && (
+                  <Text style={styles.transcriptText}>{transcription}</Text>
+                )}
+                {!!transcribeError && (
+                  <Text style={styles.transcriptError}>{transcribeError}</Text>
+                )}
+              </View>
 
               <View style={styles.actionRow}>
                 <Pressable
@@ -435,6 +480,39 @@ const styles = StyleSheet.create({
     color: colors.blue,
     letterSpacing: -0.14,
   },
+
+  transcriptBox: {
+    width: '100%',
+    marginTop: 16,
+    minHeight: 40,
+  },
+  transcriptRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  transcriptLoading: {
+    fontFamily: fonts.inter.regular,
+    fontSize: 13,
+    color: colors.textTertiary,
+  },
+  transcriptText: {
+    fontFamily: fonts.inter.regular,
+    fontSize: 14,
+    color: colors.textPrimary,
+    lineHeight: 22,
+    backgroundColor: colors.bgSurface,
+    borderRadius: 10,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: colors.borderSubtle,
+  },
+  transcriptError: {
+    fontFamily: fonts.inter.regular,
+    fontSize: 13,
+    color: colors.red,
+  },
+
   actionRow: {
     flexDirection: 'row',
     gap: 10,
