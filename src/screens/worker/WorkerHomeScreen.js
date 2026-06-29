@@ -221,8 +221,6 @@ export default function WorkerHomeScreen({ navigation }) {
   const isProcessing = recordingState === 'processing';
   const isRecorded = recordingState === 'recorded';
 
-  console.log(transcription)
-
   return (
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.bgPrimary} />
@@ -406,18 +404,23 @@ const styles = StyleSheet.create({
   },
   greetingName: {
     fontFamily: fonts.inter.bold,
-    fontSize: 24,
-    letterSpacing: -0.5,
-    color: colors.textPrimary,
+    fontSize: 26,
+    letterSpacing: -0.6,
+    color: colors.navy,
   },
   datePill: {
     backgroundColor: colors.bgSurface,
-    borderRadius: 8,
+    borderRadius: 10,
     borderWidth: 1,
     borderColor: colors.borderSubtle,
     paddingVertical: 5,
     paddingHorizontal: 10,
     marginTop: 4,
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.5,
+    shadowRadius: 4,
+    elevation: 1,
   },
   dateText: {
     fontFamily: fonts.mono.regular,
@@ -448,7 +451,7 @@ const styles = StyleSheet.create({
   hintLabelBold: {
     fontFamily: fonts.inter.semiBold,
     fontSize: 13,
-    color: colors.textPrimary,
+    color: colors.navy,
     marginTop: 4,
   },
   waveform: { marginTop: 16 },
@@ -460,7 +463,7 @@ const styles = StyleSheet.create({
   timerMain: {
     fontFamily: fonts.mono.medium,
     fontSize: 32,
-    color: colors.textPrimary,
+    color: colors.navy,
     letterSpacing: -0.64,
   },
   timerMax: {
@@ -473,7 +476,7 @@ const styles = StyleSheet.create({
     width: 280,
     height: 3,
     borderRadius: 2,
-    backgroundColor: 'rgba(0,0,0,0.07)',
+    backgroundColor: 'rgba(0,0,0,0.06)',
   },
   progressFill: {
     height: 3,
@@ -485,6 +488,14 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
     paddingVertical: 8,
+    backgroundColor: colors.bgSurface,
+    borderRadius: 20,
+    padding: 20,
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.8,
+    shadowRadius: 16,
+    elevation: 3,
   },
   playbackHeader: {
     flexDirection: 'row',
@@ -496,7 +507,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.inter.semiBold,
     fontSize: 15,
     letterSpacing: -0.15,
-    color: colors.textPrimary,
+    color: colors.navy,
   },
   playButton: {
     alignItems: 'center',
@@ -548,10 +559,15 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   submitBtn: {
-    backgroundColor: colors.blue,
-    borderRadius: 10,
-    paddingVertical: 11,
-    paddingHorizontal: 22,
+    backgroundColor: colors.navy,
+    borderRadius: 12,
+    paddingVertical: 13,
+    paddingHorizontal: 26,
+    shadowColor: colors.navy,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 3,
   },
   submitText: {
     fontFamily: fonts.inter.semiBold,
@@ -580,10 +596,10 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   recentTitle: {
-    fontFamily: fonts.inter.semiBold,
-    fontSize: 15,
-    letterSpacing: -0.15,
-    color: colors.textPrimary,
+    fontFamily: fonts.inter.bold,
+    fontSize: 17,
+    letterSpacing: -0.3,
+    color: colors.navy,
   },
   seeAll: {
     fontFamily: fonts.inter.regular,

@@ -58,7 +58,7 @@ export default function ManagerDetailScreen({ navigation, route }) {
         {/* Urgency banner */}
         <View style={[styles.urgencyBanner, {
           backgroundColor: urgencyCfg.bg,
-          borderColor: 'rgba(247,90,90,0.2)',
+          borderColor: 'rgba(239,68,68,0.18)',
           borderLeftColor: urgencyCfg.stripe,
         }]}>
           <UrgencyBadge urgency={report.urgency} />
@@ -170,7 +170,7 @@ const styles = StyleSheet.create({
   navTitle: {
     fontFamily: fonts.inter.semiBold,
     fontSize: 16,
-    color: colors.textPrimary,
+    color: colors.navy,
   },
   scrollContent: { paddingHorizontal: 20, paddingBottom: 16 },
   workerRow: {
@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: 'rgba(79,142,247,0.15)',
+    backgroundColor: 'rgba(74,106,247,0.14)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.inter.bold,
     fontSize: 16,
     letterSpacing: -0.16,
-    color: colors.textPrimary,
+    color: colors.navy,
   },
   workerRole: {
     fontFamily: fonts.inter.regular,
@@ -265,7 +265,7 @@ const styles = StyleSheet.create({
     lineHeight: 20.8,
   },
   countBadge: {
-    backgroundColor: 'rgba(79,142,247,0.15)',
+    backgroundColor: 'rgba(74,106,247,0.14)',
     borderRadius: 999,
     paddingHorizontal: 8,
     paddingVertical: 2,
@@ -284,13 +284,13 @@ const styles = StyleSheet.create({
   },
   notifRowBorder: {
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0,0,0,0.05)',
+    borderBottomColor: 'rgba(0,0,0,0.04)',
   },
   notifEmoji: { fontSize: 14 },
   notifLabel: {
     fontFamily: fonts.inter.medium,
     fontSize: 12,
-    color: colors.textPrimary,
+    color: colors.navy,
   },
   notifTime: {
     fontFamily: fonts.mono.regular,
@@ -302,7 +302,7 @@ const styles = StyleSheet.create({
     width: 18,
     height: 18,
     borderRadius: 9,
-    backgroundColor: 'rgba(79,191,133,0.15)',
+    backgroundColor: 'rgba(16,185,129,0.14)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -322,9 +322,9 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: 'rgba(79,142,247,0.15)',
+    backgroundColor: 'rgba(74,106,247,0.14)',
     borderWidth: 1.5,
-    borderColor: 'rgba(79,142,247,0.3)',
+    borderColor: 'rgba(74,106,247,0.25)',
     alignItems: 'center',
     justifyContent: 'center',
   },

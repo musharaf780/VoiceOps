@@ -55,19 +55,22 @@ export default function ReportCard({ report, onPress, showAvatar }) {
 
 const styles = StyleSheet.create({
   outer: {
-    borderRadius: 12,
-    marginBottom: 10,
+    borderRadius: 16,
+    marginBottom: 12,
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.7,
+    shadowRadius: 8,
+    elevation: 2,
   },
   card: {
     flexDirection: 'row',
     overflow: 'hidden',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.borderSubtle,
+    borderRadius: 16,
     backgroundColor: colors.bgSurface,
   },
   stripe: {
-    width: 3,
+    width: 4,
   },
   content: {
     flex: 1,
@@ -95,7 +98,7 @@ const styles = StyleSheet.create({
   workerName: {
     fontFamily: fonts.inter.bold,
     fontSize: 13,
-    color: colors.textPrimary,
+    color: colors.navy,
   },
   siteMeta: {
     fontFamily: fonts.mono.regular,
@@ -110,7 +113,7 @@ const styles = StyleSheet.create({
   siteName: {
     fontFamily: fonts.inter.bold,
     fontSize: 14,
-    color: colors.textPrimary,
+    color: colors.navy,
   },
   timestamp: {
     fontFamily: fonts.mono.regular,

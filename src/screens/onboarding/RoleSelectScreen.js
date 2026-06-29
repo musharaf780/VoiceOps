@@ -7,78 +7,83 @@ import { Feather } from '@expo/vector-icons';
 import { colors } from '../../theme/colors';
 import { fonts } from '../../theme/typography';
 
-export default function RoleSelectScreen({ navigation }) {
-  const [selected, setSelected] = useState('manager');
+const ROLES = [
+  {
+    id: 'worker',
+    icon: 'tool',
+    label: 'Field Worker',
+    desc: 'Record and submit voice reports from the field',
+    accent: colors.blue,
+    bg: colors.blueTint,
+  },
+  {
+    id: 'manager',
+    icon: 'bar-chart-2',
+    label: 'Manager',
+    desc: 'Review reports, assign tasks, manage your team',
+    accent: colors.green,
+    bg: colors.greenTint,
+  },
+];
 
-  const roles = [
-    {
-      id: 'worker',
-      title: 'Field Worker',
-      subtitle: 'Record and submit voice reports from the field',
-      icon: 'tool',
-      iconBg: 'rgba(79,142,247,0.10)',
-    },
-    {
-      id: 'manager',
-      title: 'Manager',
-      subtitle: 'Review reports, assign tasks, and manage your team',
-      icon: 'grid',
-      iconBg: 'rgba(79,142,247,0.15)',
-    },
-  ];
+export default function RoleSelectScreen({ navigation }) {
+  const [selected, setSelected] = useState('worker');
 
   return (
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.bgPrimary} />
-      <ScrollView contentContainerStyle={styles.container}>
-        <View style={styles.logoSection}>
-          <View style={styles.logoRow}>
-            <View style={styles.logoBox}>
-              <Feather name="mic" size={22} color="white" />
-            </View>
-            <Text style={styles.appName}>VoiceOps</Text>
+      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+
+        <View style={styles.logoRow}>
+          <View style={styles.logoBox}>
+            <Feather name="mic" size={20} color="white" />
           </View>
-          <Text style={styles.tagline}>Voice-first operations for field teams</Text>
+          <Text style={styles.appName}>VoiceOps</Text>
         </View>
 
-        <View style={styles.cardsSection}>
-          {roles.map(role => {
-            const isSelected = selected === role.id;
+        <Text style={styles.heading}>How will you{'\n'}use VoiceOps?</Text>
+        <Text style={styles.sub}>Choose your role to get started.</Text>
+
+        <View style={styles.cards}>
+          {ROLES.map(r => {
+            const active = selected === r.id;
             return (
               <Pressable
-                key={role.id}
-                onPress={() => setSelected(role.id)}
-                style={[styles.roleCard, isSelected && styles.roleCardSelected]}
+                key={r.id}
+                onPress={() => setSelected(r.id)}
+                style={[styles.card, active && { borderColor: r.accent, borderWidth: 2 }]}
               >
-                <View style={[styles.roleIconBox, { backgroundColor: role.iconBg }]}>
-                  <Feather name={role.icon} size={24} color={colors.blue} />
+                <View style={[styles.iconCircle, { backgroundColor: r.bg }]}>
+                  <Feather name={r.icon} size={22} color={r.accent} />
                 </View>
-                <View style={styles.roleTextContainer}>
-                  <Text style={styles.roleTitle}>{role.title}</Text>
-                  <Text style={styles.roleSubtitle}>{role.subtitle}</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.roleLabel}>{r.label}</Text>
+                  <Text style={styles.roleDesc}>{r.desc}</Text>
                 </View>
-                {isSelected && (
-                  <View style={styles.checkBadge}>
-                    <Feather name="check" size={12} color="white" />
-                  </View>
-                )}
+                <View style={[styles.radioOuter, active && { borderColor: r.accent }]}>
+                  {active && <View style={[styles.radioInner, { backgroundColor: r.accent }]} />}
+                </View>
               </Pressable>
             );
           })}
         </View>
 
-        <Pressable onPress={() => navigation.navigate('SignIn', { role: selected })}>
-          <Text style={styles.signInLink}>Sign in with existing account</Text>
-        </Pressable>
-
         <Pressable
-          style={styles.continueBtn}
+          style={styles.cta}
           onPress={() => navigation.navigate('CreateAccount', { role: selected })}
         >
-          <Text style={styles.continueBtnText}>Continue</Text>
+          <Text style={styles.ctaText}>Continue</Text>
+          <Feather name="arrow-right" size={18} color="white" />
         </Pressable>
 
-        <Text style={styles.poweredBy}>Powered by OpenAI Whisper</Text>
+        <Pressable onPress={() => navigation.navigate('SignIn', { role: selected })}>
+          <Text style={styles.signInLink}>
+            Already have an account?{' '}
+            <Text style={{ color: colors.blue, fontFamily: fonts.inter.semiBold }}>Sign in</Text>
+          </Text>
+        </Pressable>
+
+        <Text style={styles.powered}>Powered by OpenAI Whisper</Text>
       </ScrollView>
     </SafeAreaView>
   );
@@ -88,104 +93,130 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bgPrimary },
   container: {
     flexGrow: 1,
-    alignItems: 'center',
     paddingHorizontal: 24,
-    paddingTop: 52,
+    paddingTop: 20,
     paddingBottom: 32,
+    alignItems: 'center',
   },
-  logoSection: { marginTop: 24, alignItems: 'center' },
-  logoRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+
+  logoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    alignSelf: 'flex-start',
+    marginBottom: 36,
+  },
   logoBox: {
-    width: 42, height: 42,
-    backgroundColor: colors.blue,
-    borderRadius: 13,
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    backgroundColor: colors.navy,
     alignItems: 'center',
     justifyContent: 'center',
   },
   appName: {
     fontFamily: fonts.inter.bold,
-    fontSize: 28,
-    letterSpacing: -0.84,
-    color: colors.textPrimary,
+    fontSize: 20,
+    color: colors.navy,
+    letterSpacing: -0.4,
   },
-  tagline: {
+
+  heading: {
+    fontFamily: fonts.inter.bold,
+    fontSize: 34,
+    lineHeight: 40,
+    letterSpacing: -0.8,
+    color: colors.navy,
+    alignSelf: 'flex-start',
+    marginBottom: 8,
+  },
+  sub: {
     fontFamily: fonts.inter.regular,
     fontSize: 15,
     color: colors.textSecondary,
-    marginTop: 10,
-    letterSpacing: -0.15,
+    alignSelf: 'flex-start',
+    marginBottom: 32,
   },
-  cardsSection: { width: '100%', marginTop: 44, gap: 12 },
-  roleCard: {
+
+  cards: { width: '100%', gap: 12, marginBottom: 32 },
+  card: {
     backgroundColor: colors.bgSurface,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.07)',
-    padding: 20,
+    borderRadius: 18,
+    borderWidth: 1.5,
+    borderColor: 'rgba(74,106,247,0.12)',
+    padding: 18,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
+    gap: 14,
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.7,
+    shadowRadius: 8,
+    elevation: 2,
   },
-  roleCardSelected: {
-    borderWidth: 2,
-    borderColor: colors.blue,
-  },
-  roleIconBox: {
-    width: 48, height: 48,
-    borderRadius: 12,
+  iconCircle: {
+    width: 52,
+    height: 52,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  roleTextContainer: { flex: 1 },
-  roleTitle: {
+  roleLabel: {
     fontFamily: fonts.inter.bold,
     fontSize: 16,
-    letterSpacing: -0.16,
-    color: colors.textPrimary,
+    color: colors.navy,
+    marginBottom: 3,
   },
-  roleSubtitle: {
+  roleDesc: {
     fontFamily: fonts.inter.regular,
     fontSize: 13,
     color: colors.textSecondary,
-    marginTop: 4,
+    lineHeight: 19,
   },
-  checkBadge: {
-    position: 'absolute',
-    top: 14,
-    right: 14,
+  radioOuter: {
     width: 22,
     height: 22,
     borderRadius: 11,
-    backgroundColor: colors.blue,
+    borderWidth: 2,
+    borderColor: 'rgba(27,45,107,0.20)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  signInLink: {
-    fontSize: 14,
-    fontFamily: fonts.inter.medium,
-    color: colors.blue,
-    marginTop: 28,
-  },
-  continueBtn: {
+  radioInner: { width: 10, height: 10, borderRadius: 5 },
+
+  cta: {
     width: '100%',
-    backgroundColor: colors.blue,
-    borderRadius: 12,
-    height: 52,
+    backgroundColor: colors.navy,
+    borderRadius: 16,
+    height: 54,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 28,
+    gap: 8,
+    marginBottom: 16,
+    shadowColor: colors.navy,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.30,
+    shadowRadius: 12,
+    elevation: 5,
   },
-  continueBtnText: {
+  ctaText: {
     fontFamily: fonts.inter.bold,
     fontSize: 16,
     color: 'white',
-    letterSpacing: -0.16,
   },
-  poweredBy: {
+
+  signInLink: {
+    fontFamily: fonts.inter.regular,
+    fontSize: 13,
+    color: colors.textSecondary,
+    marginBottom: 24,
+    textAlign: 'center',
+  },
+  powered: {
     fontFamily: fonts.mono.regular,
-    fontSize: 11,
+    fontSize: 10,
     color: colors.textTertiary,
-    letterSpacing: 0.22,
-    marginTop: 32,
+    letterSpacing: 0.2,
   },
 });

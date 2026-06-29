@@ -40,33 +40,9 @@ export default function ReportPreviewScreen({ navigation, route }) {
     setItems(prev => prev.map(i => i.id === id ? { ...i, done: !i.done } : i));
   };
 
-  const uploadAudio = async (uri) => {
-    if (!uri) return null;
-    const ext = uri.split('.').pop() ?? 'mp3';
-    const fileName = `${report.id}-${Date.now()}.${ext}`;
-
-    // fetch() handles file:// URIs in React Native — gives us a Blob
-    const res = await fetch(uri);
-    const blob = await res.blob();
-
-    const { data, error } = await supabase.storage
-      .from('voice-reports')
-      .upload(fileName, blob, { contentType: blob.type || 'audio/mpeg', upsert: false });
-
-    if (error) throw error;
-
-    const { data: urlData } = supabase.storage
-      .from('voice-reports')
-      .getPublicUrl(data.path);
-
-    return urlData.publicUrl;
-  };
-
   const handleSubmit = async () => {
     setSubmitting(true);
     try {
-      const publicAudioUrl = await uploadAudio(audioUri);
-
       const { error } = await supabase.from('workers-instruction').insert({
         id:              report.id,
         worker_id:       report.workerId,
@@ -83,7 +59,7 @@ export default function ReportPreviewScreen({ navigation, route }) {
         is_read:         false,
         action_items:    items,
         automations:     report.automations,
-        audio_uri:       publicAudioUrl,
+        audio_uri:       audioUri,
       });
 
       if (error) {
@@ -132,7 +108,7 @@ export default function ReportPreviewScreen({ navigation, route }) {
         {/* Urgency banner */}
         <View style={[styles.urgencyBanner, {
           backgroundColor: urgencyCfg.bg,
-          borderColor: 'rgba(247,90,90,0.2)',
+          borderColor: 'rgba(239,68,68,0.18)',
           borderLeftColor: urgencyCfg.stripe,
         }]}>
           <Text style={[styles.urgencyBannerText, { color: urgencyCfg.color }]}>
@@ -286,7 +262,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.inter.semiBold,
     fontSize: 16,
     letterSpacing: -0.16,
-    color: colors.textPrimary,
+    color: colors.navy,
   },
   submitBtnTop: {
     backgroundColor: colors.blue,
@@ -309,13 +285,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 6,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0,0,0,0.05)',
+    borderBottomColor: 'rgba(0,0,0,0.04)',
   },
   aiCheck: {
     width: 16,
     height: 16,
     borderRadius: 8,
-    backgroundColor: 'rgba(79,191,133,0.2)',
+    backgroundColor: 'rgba(16,185,129,0.18)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -404,7 +380,7 @@ const styles = StyleSheet.create({
     lineHeight: 19.8,
   },
   countBadge: {
-    backgroundColor: 'rgba(79,142,247,0.15)',
+    backgroundColor: 'rgba(74,106,247,0.14)',
     borderRadius: 999,
     paddingHorizontal: 8,
     paddingVertical: 2,
@@ -416,7 +392,7 @@ const styles = StyleSheet.create({
   },
   addItemBtn: {
     borderWidth: 1.5,
-    borderColor: 'rgba(0,0,0,0.08)',
+    borderColor: 'rgba(0,0,0,0.06)',
     borderStyle: 'dashed',
     borderRadius: 8,
     paddingVertical: 10,
@@ -439,7 +415,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   metaChip: {
-    backgroundColor: 'rgba(0,0,0,0.05)',
+    backgroundColor: 'rgba(0,0,0,0.04)',
     borderRadius: 8,
     paddingVertical: 5,
     paddingHorizontal: 10,
@@ -461,11 +437,16 @@ const styles = StyleSheet.create({
   },
   submitBtn: {
     width: '100%',
-    backgroundColor: colors.blue,
-    borderRadius: 12,
-    height: 52,
+    backgroundColor: colors.navy,
+    borderRadius: 14,
+    height: 54,
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: colors.navy,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 4,
   },
   submitBtnLoading: { opacity: 0.5 },
   submitBtnText: {
@@ -498,24 +479,24 @@ const styles = StyleSheet.create({
     width: 144,
     height: 144,
     borderRadius: 72,
-    backgroundColor: 'rgba(79,191,133,0.08)',
+    backgroundColor: 'rgba(16,185,129,0.08)',
     borderWidth: 1,
-    borderColor: 'rgba(79,191,133,0.15)',
+    borderColor: 'rgba(16,185,129,0.14)',
   },
   overlayGlow2: {
     position: 'absolute',
     width: 128,
     height: 128,
     borderRadius: 64,
-    backgroundColor: 'rgba(79,191,133,0.10)',
+    backgroundColor: 'rgba(16,185,129,0.10)',
     borderWidth: 1,
-    borderColor: 'rgba(79,191,133,0.20)',
+    borderColor: 'rgba(16,185,129,0.18)',
   },
   overlayCircle: {
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: 'rgba(79,191,133,0.15)',
+    backgroundColor: 'rgba(16,185,129,0.14)',
     borderWidth: 2,
     borderColor: colors.green,
     alignItems: 'center',
@@ -524,6 +505,6 @@ const styles = StyleSheet.create({
   overlayText: {
     fontFamily: fonts.inter.bold,
     fontSize: 22,
-    color: colors.textPrimary,
+    color: colors.navy,
   },
 });

@@ -55,7 +55,7 @@ export default function VerifyPhoneScreen({ navigation, route }) {
         </Pressable>
 
         <View style={styles.stepIndicator}>
-          {[colors.green, colors.blue, 'rgba(0,0,0,0.08)'].map((c, i) => (
+          {[colors.navy, colors.blue, 'rgba(27,45,107,0.12)'].map((c, i) => (
             <View key={i} style={[styles.stepBar, { backgroundColor: c }]} />
           ))}
         </View>
@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: 'rgba(79,142,247,0.10)',
+    backgroundColor: 'rgba(74,106,247,0.10)',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 20,
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bgSurface,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.07)',
+    borderColor: 'rgba(0,0,0,0.06)',
     overflow: 'hidden',
     marginBottom: 20,
   },
@@ -186,13 +186,13 @@ const styles = StyleSheet.create({
   },
   stepRowBorder: {
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0,0,0,0.06)',
+    borderBottomColor: 'rgba(0,0,0,0.05)',
   },
   stepIcon: {
     width: 32,
     height: 32,
     borderRadius: 10,
-    backgroundColor: 'rgba(79,142,247,0.10)',
+    backgroundColor: 'rgba(74,106,247,0.10)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -208,7 +208,7 @@ const styles = StyleSheet.create({
     gap: 8,
     backgroundColor: colors.greenTint,
     borderWidth: 1,
-    borderColor: 'rgba(79,191,133,0.2)',
+    borderColor: 'rgba(16,185,129,0.18)',
     borderRadius: 10,
     paddingVertical: 10,
     paddingHorizontal: 14,
@@ -225,7 +225,7 @@ const styles = StyleSheet.create({
     gap: 8,
     backgroundColor: colors.redTint,
     borderWidth: 1,
-    borderColor: 'rgba(247,90,90,0.2)',
+    borderColor: 'rgba(239,68,68,0.18)',
     borderRadius: 10,
     paddingVertical: 10,
     paddingHorizontal: 14,

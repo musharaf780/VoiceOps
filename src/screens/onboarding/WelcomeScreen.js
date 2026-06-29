@@ -1,6 +1,12 @@
+/*
+ * DESIGN DIRECTION: Landing / handshake screen. The user just picked a role.
+ *   Emotion: confident, premium, ready-to-work.
+ * SIGNATURE ELEMENT: Oversized pulsing mic glyph inside stacked glow rings,
+ *   floating above a dense feature chip row.
+ */
 import React, { useEffect, useRef } from 'react';
 import {
-  View, Text, Pressable, StatusBar, Animated, StyleSheet,
+  Animated, Pressable, StatusBar, StyleSheet, Text, View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
@@ -8,208 +14,241 @@ import { colors } from '../../theme/colors';
 import { fonts } from '../../theme/typography';
 
 const FEATURES = [
-  {
-    icon: 'mic',
-    iconColor: colors.blue,
-    iconBg: colors.blueTint,
-    title: 'Voice Reports',
-    subtitle: 'Record issues hands-free in seconds',
-  },
-  {
-    icon: 'bell',
-    iconColor: colors.red,
-    iconBg: colors.redTint,
-    title: 'Instant Alerts',
-    subtitle: 'Critical issues escalated automatically',
-  },
-  {
-    icon: 'activity',
-    iconColor: colors.green,
-    iconBg: colors.greenTint,
-    title: 'AI Structured Data',
-    subtitle: 'Reports formatted and prioritised by AI',
-  },
+  { icon: 'mic',      color: colors.blue,  bg: colors.blueTint,  label: 'Voice Reports' },
+  { icon: 'zap',      color: colors.red,   bg: colors.redTint,   label: 'Instant Alerts' },
+  { icon: 'cpu',      color: colors.green, bg: colors.greenTint, label: 'AI Structured' },
 ];
 
 export default function WelcomeScreen({ navigation, route }) {
   const role = route?.params?.role || 'worker';
-  const scale = useRef(new Animated.Value(0.7)).current;
+  const slideY  = useRef(new Animated.Value(30)).current;
   const opacity = useRef(new Animated.Value(0)).current;
+  const ring1   = useRef(new Animated.Value(1)).current;
+  const ring2   = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    Animated.spring(scale, {
-      toValue: 1,
-      tension: 50,
-      friction: 7,
-      useNativeDriver: true,
-    }).start();
-    Animated.timing(opacity, {
-      toValue: 1,
-      duration: 400,
-      useNativeDriver: true,
-    }).start();
+    Animated.parallel([
+      Animated.spring(slideY,  { toValue: 0, tension: 60, friction: 8, useNativeDriver: true }),
+      Animated.timing(opacity, { toValue: 1, duration: 500, useNativeDriver: true }),
+    ]).start();
+
+    const pulse = () => {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(ring1, { toValue: 1.18, duration: 1000, useNativeDriver: true }),
+          Animated.timing(ring1, { toValue: 1,    duration: 1000, useNativeDriver: true }),
+        ]),
+      ).start();
+      setTimeout(() => {
+        Animated.loop(
+          Animated.sequence([
+            Animated.timing(ring2, { toValue: 1.35, duration: 1000, useNativeDriver: true }),
+            Animated.timing(ring2, { toValue: 1,    duration: 1000, useNativeDriver: true }),
+          ]),
+        ).start();
+      }, 300);
+    };
+    pulse();
   }, []);
 
   return (
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.bgPrimary} />
-      <View style={styles.container}>
-        <Animated.View style={[styles.circleWrapper, { transform: [{ scale }], opacity }]}>
-          <View style={styles.glowRing1} />
-          <View style={styles.glowRing2} />
-          <View style={styles.mainCircle}>
-            <Feather name="check" size={52} color={colors.green} />
-          </View>
-        </Animated.View>
 
-        <Text style={styles.heading}>You're all set!</Text>
+      {/* Hero — glow rings + mic icon */}
+      <View style={styles.heroArea}>
+        <Animated.View style={[styles.ring2, { transform: [{ scale: ring2 }] }]} />
+        <Animated.View style={[styles.ring1, { transform: [{ scale: ring1 }] }]} />
+        <View style={styles.iconCircle}>
+          <Feather name="mic" size={48} color={colors.blue} />
+        </View>
+
+        {/* Floating tag */}
+        <View style={styles.badge}>
+          <View style={styles.badgeDot} />
+          <Text style={styles.badgeText}>Field reporting, reinvented</Text>
+        </View>
+      </View>
+
+      {/* Content */}
+      <Animated.View style={[styles.bottom, { opacity, transform: [{ translateY: slideY }] }]}>
+        <Text style={styles.heading}>Voice-first{'\n'}field ops</Text>
         <Text style={styles.subtext}>
-          VoiceOps is ready. Start capturing field issues with your voice.
+          Record issues in seconds. AI turns your voice into structured reports — hands-free.
         </Text>
 
-        <View style={styles.featureCards}>
+        {/* Feature chips */}
+        <View style={styles.chips}>
           {FEATURES.map((f, i) => (
-            <View key={i} style={styles.featureCard}>
-              <View style={[styles.featureIconBox, { backgroundColor: f.iconBg }]}>
-                <Feather name={f.icon} size={16} color={f.iconColor} />
-              </View>
-              <View>
-                <Text style={styles.featureTitle}>{f.title}</Text>
-                <Text style={styles.featureSubtitle}>{f.subtitle}</Text>
-              </View>
+            <View key={i} style={[styles.chip, { backgroundColor: f.bg }]}>
+              <Feather name={f.icon} size={13} color={f.color} />
+              <Text style={[styles.chipText, { color: f.color }]}>{f.label}</Text>
             </View>
           ))}
         </View>
 
-        <Pressable
-          style={styles.dashBtn}
-          onPress={() => {
-            if (role === 'manager') {
-              navigation.reset({ index: 0, routes: [{ name: 'ManagerTabs' }] });
-            } else {
-              navigation.reset({ index: 0, routes: [{ name: 'WorkerTabs' }] });
-            }
-          }}
-        >
-          <Text style={styles.dashBtnText}>Go to Dashboard</Text>
-        </Pressable>
+        {/* Nav row */}
+        <View style={styles.navRow}>
+          <Pressable style={styles.backCircle} onPress={() => navigation.goBack()}>
+            <Feather name="arrow-left" size={18} color={colors.textSecondary} />
+          </Pressable>
+          <View style={styles.dots}>
+            <View style={[styles.dot, styles.dotActive]} />
+            <View style={styles.dot} />
+            <View style={styles.dot} />
+          </View>
+          <Pressable
+            style={styles.goBtn}
+            onPress={() => {
+              if (role === 'manager') {
+                navigation.reset({ index: 0, routes: [{ name: 'ManagerTabs' }] });
+              } else {
+                navigation.reset({ index: 0, routes: [{ name: 'WorkerTabs' }] });
+              }
+            }}
+          >
+            <Feather name="arrow-right" size={20} color="white" />
+          </Pressable>
+        </View>
 
-        <Text style={styles.powered}>Powered by OpenAI Whisper</Text>
-      </View>
+        <Text style={styles.powered}>Powered by OpenAI Whisper · GPT-4o</Text>
+      </Animated.View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bgPrimary },
-  container: {
+
+  heroArea: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 32,
-    paddingBottom: 40,
   },
-  circleWrapper: {
-    width: 144,
-    height: 144,
+  ring2: {
+    position: 'absolute',
+    width: 220,
+    height: 220,
+    borderRadius: 110,
+    backgroundColor: 'rgba(74,106,247,0.06)',
+  },
+  ring1: {
+    position: 'absolute',
+    width: 160,
+    height: 160,
+    borderRadius: 80,
+    backgroundColor: 'rgba(74,106,247,0.10)',
+  },
+  iconCircle: {
+    width: 110,
+    height: 110,
+    borderRadius: 55,
+    backgroundColor: colors.bgSurface,
+    borderWidth: 1.5,
+    borderColor: colors.borderEmphasis,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 28,
+    shadowColor: colors.blue,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.4,
+    shadowRadius: 30,
+    elevation: 10,
   },
-  glowRing1: {
+  badge: {
     position: 'absolute',
-    width: 144,
-    height: 144,
-    borderRadius: 72,
-    backgroundColor: 'rgba(79,191,133,0.08)',
-    borderWidth: 1,
-    borderColor: 'rgba(79,191,133,0.15)',
-  },
-  glowRing2: {
-    position: 'absolute',
-    width: 128,
-    height: 128,
-    borderRadius: 64,
-    backgroundColor: 'rgba(79,191,133,0.10)',
-    borderWidth: 1,
-    borderColor: 'rgba(79,191,133,0.20)',
-  },
-  mainCircle: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: 'rgba(79,191,133,0.15)',
-    borderWidth: 2,
-    borderColor: colors.green,
+    bottom: 32,
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: colors.bgSurface,
+    borderWidth: 1,
+    borderColor: colors.borderSubtle,
+    borderRadius: 20,
+    paddingVertical: 7,
+    paddingHorizontal: 14,
+  },
+  badgeDot: {
+    width: 7, height: 7, borderRadius: 4, backgroundColor: colors.green,
+  },
+  badgeText: {
+    fontFamily: fonts.inter.semiBold,
+    fontSize: 12,
+    color: colors.textSecondary,
+  },
+
+  bottom: {
+    paddingHorizontal: 28,
+    paddingTop: 20,
+    paddingBottom: 8,
   },
   heading: {
     fontFamily: fonts.inter.bold,
-    fontSize: 28,
-    letterSpacing: -0.56,
+    fontSize: 36,
+    lineHeight: 42,
+    letterSpacing: -1,
     color: colors.textPrimary,
     marginBottom: 10,
-    textAlign: 'center',
   },
   subtext: {
     fontFamily: fonts.inter.regular,
-    fontSize: 15,
+    fontSize: 14,
     color: colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 24,
-    maxWidth: 280,
-    marginBottom: 40,
+    lineHeight: 22,
+    marginBottom: 20,
+    maxWidth: 300,
   },
-  featureCards: { width: '100%', gap: 10 },
-  featureCard: {
-    backgroundColor: colors.bgSurface,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.borderSubtle,
-    padding: 14,
-    paddingHorizontal: 16,
+
+  chips: { flexDirection: 'row', gap: 8, marginBottom: 28, flexWrap: 'wrap' },
+  chip: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 5,
+    borderRadius: 20,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
   },
-  featureIconBox: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
+  chipText: { fontFamily: fonts.inter.semiBold, fontSize: 12 },
+
+  navRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+  },
+  backCircle: {
+    width: 46, height: 46, borderRadius: 23,
+    backgroundColor: colors.bgSurface,
+    borderWidth: 1.5,
+    borderColor: colors.borderEmphasis,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  featureTitle: {
-    fontFamily: fonts.inter.semiBold,
-    fontSize: 14,
-    color: colors.textPrimary,
+  dots: { flexDirection: 'row', gap: 6 },
+  dot: {
+    width: 8, height: 8, borderRadius: 4,
+    backgroundColor: colors.borderEmphasis,
   },
-  featureSubtitle: {
-    fontFamily: fonts.inter.regular,
-    fontSize: 12,
-    color: colors.textSecondary,
-    marginTop: 2,
+  dotActive: {
+    width: 22, borderRadius: 4, backgroundColor: colors.blue,
   },
-  dashBtn: {
-    width: '100%',
+  goBtn: {
+    width: 52, height: 52, borderRadius: 26,
     backgroundColor: colors.blue,
-    borderRadius: 12,
-    height: 52,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 36,
-    marginBottom: 16,
+    shadowColor: colors.blue,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    elevation: 5,
   },
-  dashBtnText: {
-    fontFamily: fonts.inter.bold,
-    fontSize: 16,
-    color: 'white',
-  },
+
   powered: {
     fontFamily: fonts.mono.regular,
-    fontSize: 11,
+    fontSize: 10,
     color: colors.textTertiary,
-    letterSpacing: 0.22,
+    textAlign: 'center',
+    letterSpacing: 0.2,
+    paddingBottom: 4,
   },
 });

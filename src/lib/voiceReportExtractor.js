@@ -62,5 +62,7 @@ Rules:
 
   const data = await response.json();
   const raw = data.choices[0].message.content.trim();
-  return JSON.parse(raw);
+  const parsed = JSON.parse(raw);
+  parsed.id = `RPT-${Date.now()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+  return parsed;
 }

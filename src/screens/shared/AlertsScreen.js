@@ -27,7 +27,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.inter.bold,
     fontSize: 22,
     letterSpacing: -0.44,
-    color: colors.textPrimary,
+    color: colors.navy,
     marginBottom: 24,
   },
   empty: {

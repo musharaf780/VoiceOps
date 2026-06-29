@@ -31,7 +31,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.inter.bold,
     fontSize: 22,
     letterSpacing: -0.44,
-    color: colors.textPrimary,
+    color: colors.navy,
     marginBottom: 32,
   },
   avatarBlock: { alignItems: 'center', gap: 8 },
@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
   name: {
     fontFamily: fonts.inter.bold,
     fontSize: 20,
-    color: colors.textPrimary,
+    color: colors.navy,
   },
   company: {
     fontFamily: fonts.inter.regular,

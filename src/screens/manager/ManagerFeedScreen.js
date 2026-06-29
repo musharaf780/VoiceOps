@@ -219,9 +219,9 @@ const styles = StyleSheet.create({
   },
   greetingName: {
     fontFamily: fonts.inter.bold,
-    fontSize: 24,
+    fontSize: 26,
     letterSpacing: -0.5,
-    color: colors.textPrimary,
+    color: colors.navy,
   },
   headerRight: {
     alignItems: 'flex-end',
@@ -259,7 +259,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
     borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.10)',
+    borderColor: 'rgba(0,0,0,0.07)',
     borderRadius: 999,
     paddingVertical: 6,
     paddingHorizontal: 14,
@@ -273,7 +273,7 @@ const styles = StyleSheet.create({
   },
   chipTextActive: { color: 'white' },
   chipBadge: {
-    backgroundColor: 'rgba(0,0,0,0.08)',
+    backgroundColor: 'rgba(0,0,0,0.06)',
     borderRadius: 999,
     minWidth: 18,
     height: 18,
@@ -281,7 +281,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 5,
   },
-  chipBadgeActive: { backgroundColor: 'rgba(255,255,255,0.25)' },
+  chipBadgeActive: { backgroundColor: 'rgba(255,255,255,0.70)' },
   chipBadgeText: {
     fontFamily: fonts.inter.bold,
     fontSize: 10,
@@ -318,10 +318,10 @@ const styles = StyleSheet.create({
   },
 
   criticalCard: {
-    backgroundColor: 'rgba(247,90,90,0.04)',
+    backgroundColor: 'rgba(239,68,68,0.06)',
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: 'rgba(247,90,90,0.18)',
+    borderColor: 'rgba(239,68,68,0.15)',
     borderLeftWidth: 4,
     borderLeftColor: colors.red,
     padding: 16,
@@ -347,7 +347,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.inter.bold,
     fontSize: 16,
     letterSpacing: -0.2,
-    color: colors.textPrimary,
+    color: colors.navy,
   },
   criticalSite: {
     fontFamily: fonts.inter.regular,
@@ -364,7 +364,7 @@ const styles = StyleSheet.create({
   },
   criticalDivider: {
     height: 1,
-    backgroundColor: 'rgba(247,90,90,0.12)',
+    backgroundColor: 'rgba(239,68,68,0.10)',
     marginVertical: 12,
   },
   criticalActions: {
@@ -393,7 +393,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 6,
     borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.10)',
+    borderColor: 'rgba(0,0,0,0.07)',
     borderRadius: 8,
     paddingVertical: 9,
     backgroundColor: colors.bgSurface,
@@ -425,7 +425,7 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontFamily: fonts.inter.semiBold,
     fontSize: 15,
-    color: colors.textPrimary,
+    color: colors.navy,
     marginBottom: 6,
   },
   emptySubtitle: {

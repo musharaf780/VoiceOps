@@ -34,14 +34,14 @@ export default function BottomTabBar({ state, descriptors, navigation }) {
 
         return (
           <Pressable key={route.key} onPress={onPress} style={styles.tab}>
-            <Feather
-              name={iconName}
-              size={22}
-              color={isFocused ? colors.blue : colors.textTertiary}
-            />
-            {isFocused && (
-              <Text style={styles.label}>{route.name}</Text>
-            )}
+            <View style={[styles.iconWrap, isFocused && styles.iconWrapActive]}>
+              <Feather
+                name={iconName}
+                size={20}
+                color={isFocused ? colors.navy : colors.textTertiary}
+              />
+            </View>
+            <Text style={[styles.label, isFocused && styles.labelActive]}>{route.name}</Text>
           </Pressable>
         );
       })}
@@ -51,24 +51,44 @@ export default function BottomTabBar({ state, descriptors, navigation }) {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.bgPrimary,
+    backgroundColor: colors.bgSurface,
     borderTopWidth: 1,
     borderTopColor: colors.borderSubtle,
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'flex-start',
     paddingTop: 10,
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 8,
+    elevation: 8,
   },
   tab: {
     flexDirection: 'column',
     alignItems: 'center',
-    gap: 3,
+    gap: 4,
     paddingHorizontal: 16,
     paddingVertical: 2,
   },
+  iconWrap: {
+    width: 40,
+    height: 32,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  iconWrapActive: {
+    backgroundColor: colors.blueTint,
+  },
   label: {
     fontSize: 10,
+    fontFamily: fonts.inter.regular,
+    color: colors.textTertiary,
+    letterSpacing: 0.2,
+  },
+  labelActive: {
     fontFamily: fonts.inter.semiBold,
-    color: colors.blue,
+    color: colors.navy,
   },
 });

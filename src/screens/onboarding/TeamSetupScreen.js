@@ -9,13 +9,13 @@ import { colors } from '../../theme/colors';
 import { fonts } from '../../theme/typography';
 
 const INVITED = [
-  { id: 1, initials: 'JT', name: 'James Torres', contact: 'james@constructco.com', status: 'JOINED', avatarBg: 'rgba(79,142,247,0.15)', avatarColor: '#4F8EF7' },
-  { id: 2, initials: 'MC', name: 'Maria Chen', contact: 'maria@constructco.com', status: 'PENDING', avatarBg: 'rgba(79,191,133,0.12)', avatarColor: '#4FBF85' },
+  { id: 1, initials: 'JT', name: 'James Torres', contact: 'james@constructco.com', status: 'JOINED', avatarBg: 'rgba(74,106,247,0.12)', avatarColor: '#4A6AF7' },
+  { id: 2, initials: 'MC', name: 'Maria Chen', contact: 'maria@constructco.com', status: 'PENDING', avatarBg: 'rgba(16,185,129,0.10)', avatarColor: '#10B981' },
 ];
 
 const STATUS_STYLES = {
-  JOINED:  { bg: 'rgba(79,191,133,0.12)', color: '#4FBF85' },
-  PENDING: { bg: 'rgba(247,169,79,0.14)', color: '#F7A94F' },
+  JOINED:  { bg: 'rgba(16,185,129,0.10)', color: '#10B981' },
+  PENDING: { bg: 'rgba(245,158,11,0.12)', color: '#F59E0B' },
 };
 
 export default function TeamSetupScreen({ navigation }) {
@@ -28,7 +28,7 @@ export default function TeamSetupScreen({ navigation }) {
         </Pressable>
 
         <View style={styles.stepIndicator}>
-          {[colors.green, colors.green, colors.blue].map((c, i) => (
+          {[colors.navy, colors.navy, colors.blue].map((c, i) => (
             <View key={i} style={[styles.stepBar, { backgroundColor: c }]} />
           ))}
         </View>
@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.inter.bold,
     fontSize: 26,
     letterSpacing: -0.52,
-    color: colors.textPrimary,
+    color: colors.navy,
     marginBottom: 8,
   },
   subtitle: {
@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
   inviteName: {
     fontFamily: fonts.inter.medium,
     fontSize: 14,
-    color: colors.textPrimary,
+    color: colors.navy,
   },
   inviteContact: {
     fontFamily: fonts.inter.regular,
