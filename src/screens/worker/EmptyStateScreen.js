@@ -1,12 +1,13 @@
-import React from 'react';
 import {
-  View, Text, StatusBar, StyleSheet,
+  StatusBar, StyleSheet,
+  Text,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors } from '../../theme/colors';
-import { fonts } from '../../theme/typography';
 import MetricCard from '../../components/MetricCard';
 import RecordButton from '../../components/RecordButton';
+import { colors } from '../../theme/colors';
+import { fonts } from '../../theme/typography';
 
 export default function EmptyStateScreen({ navigation }) {
   return (
@@ -24,7 +25,7 @@ export default function EmptyStateScreen({ navigation }) {
 
         <View style={styles.recordArea}>
           <RecordButton state="idle" />
-          <Text style={styles.hintLabel}>Hold to record</Text>
+          <Text style={styles.hintLabel}>Hold to </Text>
         </View>
 
         <View style={styles.emptyState}>
