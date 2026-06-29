@@ -26,6 +26,7 @@ import WaveformVisualizer from '../../components/WaveformVisualizer';
 import { useAuth } from '../../context/AuthProvider';
 import { REPORTS, WORKER } from '../../data';
 import { transcribeAudio } from '../../lib/whisper';
+import { extractFieldReport } from '../../lib/voiceReportExtractor';
 import { colors } from '../../theme/colors';
 import { fonts } from '../../theme/typography';
 
@@ -68,6 +69,8 @@ export default function WorkerHomeScreen({ navigation }) {
   const [transcription, setTranscription] = useState('');
   const [transcribing, setTranscribing] = useState(false);
   const [transcribeError, setTranscribeError] = useState('');
+  const [extracting, setExtracting] = useState(false);
+  const [audioUri, setAudioUri] = useState(null);
 
   const contentOpacity = useRef(new Animated.Value(1)).current;
   const timerRef = useRef(null);
@@ -135,11 +138,13 @@ export default function WorkerHomeScreen({ navigation }) {
     // Transcribe in background after UI transitions to recorded state
     setTranscription('');
     setTranscribeError('');
+    setAudioUri(null);
     setTranscribing(true);
     try {
-      const audioUri = await getAudioUriForTranscription(uri);
-      const text = await transcribeAudio(audioUri);
+      const resolvedAudioUri = await getAudioUriForTranscription(uri);
+      const text = await transcribeAudio(resolvedAudioUri);
       setTranscription(text);
+      setAudioUri(resolvedAudioUri);
     } catch (e) {
       setTranscribeError(e.message ?? 'Transcription failed');
     } finally {
@@ -201,6 +206,8 @@ export default function WorkerHomeScreen({ navigation }) {
     elapsedRef.current = 0;
     setTranscription('');
     setTranscribeError('');
+    setAudioUri(null);
+    setExtracting(false);
     setRecordingState('idle');
   }, [player, samplePlayer]);
 
@@ -325,10 +332,32 @@ export default function WorkerHomeScreen({ navigation }) {
 
               <View style={styles.actionRow}>
                 <Pressable
-                  style={styles.submitBtn}
-                  onPress={() => navigation.navigate('ReportPreview', { report: REPORTS[0] })}
+                  style={[styles.submitBtn, extracting && { opacity: 0.6 }]}
+                  disabled={extracting}
+                  onPress={async () => {
+                    setExtracting(true);
+                    try {
+                      const workerInfo = {
+                        workerId: user?.id ?? WORKER.id,
+                        workerName: fullName,
+                        workerInitials: fullName
+                          .split(' ')
+                          .map(w => w[0])
+                          .join('')
+                          .toUpperCase(),
+                      };
+                      const report = await extractFieldReport(transcription, workerInfo);
+                      navigation.navigate('ReportPreview', { report, audioUri });
+                    } catch (e) {
+                      setTranscribeError(e.message ?? 'Failed to build report');
+                    } finally {
+                      setExtracting(false);
+                    }
+                  }}
                 >
-                  <Text style={styles.submitText}>Submit report</Text>
+                  <Text style={styles.submitText}>
+                    {extracting ? 'Building report…' : 'Submit report'}
+                  </Text>
                 </Pressable>
                 <Pressable style={styles.rerecordBtn} onPress={discard}>
                   <Text style={styles.rerecordText}>Re-record</Text>

@@ -1,20 +1,32 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { Feather } from '@expo/vector-icons';
+import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
+import { useRef, useState } from 'react';
 import {
-  View, Text, Pressable, ScrollView, StatusBar,
-  Animated, ActivityIndicator, StyleSheet,
+  ActivityIndicator,
+  Animated,
+  Pressable, ScrollView, StatusBar,
+  StyleSheet,
+  Text,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Feather } from '@expo/vector-icons';
+import ActionItemRow from '../../components/ActionItemRow';
+import FieldRow from '../../components/FieldRow';
+import { URGENCY } from '../../data';
+import { supabase } from '../../lib/supabase';
 import { colors } from '../../theme/colors';
 import { fonts } from '../../theme/typography';
-import { URGENCY } from '../../data';
-import UrgencyBadge from '../../components/UrgencyBadge';
-import FieldRow from '../../components/FieldRow';
-import ActionItemRow from '../../components/ActionItemRow';
 
 export default function ReportPreviewScreen({ navigation, route }) {
   const report = route?.params?.report || {};
+  const audioUri = route?.params?.audioUri ?? null;
   const urgencyCfg = URGENCY[report.urgency] || URGENCY.LOW;
+
+
+  const audioPlayer = useAudioPlayer(audioUri ? { uri: audioUri } : null);
+  const audioStatus = useAudioPlayerStatus(audioPlayer);
+
+
 
   const [transcriptExpanded, setTranscriptExpanded] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -28,17 +40,65 @@ export default function ReportPreviewScreen({ navigation, route }) {
     setItems(prev => prev.map(i => i.id === id ? { ...i, done: !i.done } : i));
   };
 
-  const handleSubmit = () => {
+  const uploadAudio = async (uri) => {
+    if (!uri) return null;
+    const ext = uri.split('.').pop() ?? 'mp3';
+    const fileName = `${report.id}-${Date.now()}.${ext}`;
+
+    // fetch() handles file:// URIs in React Native — gives us a Blob
+    const res = await fetch(uri);
+    const blob = await res.blob();
+
+    const { data, error } = await supabase.storage
+      .from('voice-reports')
+      .upload(fileName, blob, { contentType: blob.type || 'audio/mpeg', upsert: false });
+
+    if (error) throw error;
+
+    const { data: urlData } = supabase.storage
+      .from('voice-reports')
+      .getPublicUrl(data.path);
+
+    return urlData.publicUrl;
+  };
+
+  const handleSubmit = async () => {
     setSubmitting(true);
-    setTimeout(() => {
-      setSubmitting(false);
-      setSubmitted(true);
-      Animated.spring(overlayScale, { toValue: 1, tension: 50, friction: 7, useNativeDriver: true }).start();
-      Animated.timing(overlayOpacity, { toValue: 1, duration: 300, useNativeDriver: true }).start();
-      setTimeout(() => {
-        navigation.navigate('WorkerHome');
-      }, 1800);
-    }, 1200);
+    try {
+      const publicAudioUrl = await uploadAudio(audioUri);
+
+      const { error } = await supabase.from('workers-instruction').insert({
+        id:              report.id,
+        worker_id:       report.workerId,
+        worker_name:     report.workerName,
+        worker_initials: report.workerInitials,
+        site:            report.site,
+        issue_type:      report.issueType,
+        component:       report.component,
+        urgency:         report.urgency,
+        summary:         report.summary,
+        transcript:      report.transcript,
+        audio_duration:  report.audioDuration,
+        timestamp_full:  report.timestampFull,
+        is_read:         false,
+        action_items:    items,
+        automations:     report.automations,
+        audio_uri:       publicAudioUrl,
+      });
+
+      if (error) {
+        console.error('Supabase insert error:', JSON.stringify(error));
+        throw error;
+      }
+    } catch (e) {
+      console.error('Failed to save report:', e.message ?? e);
+    }
+
+    setSubmitting(false);
+    setSubmitted(true);
+    Animated.spring(overlayScale, { toValue: 1, tension: 50, friction: 7, useNativeDriver: true }).start();
+    Animated.timing(overlayOpacity, { toValue: 1, duration: 300, useNativeDriver: true }).start();
+    setTimeout(() => navigation.navigate('WorkerHome'), 1800);
   };
 
   const urgencyLabel = report.urgency === 'CRITICAL' || report.urgency === 'HIGH'
@@ -96,6 +156,31 @@ export default function ReportPreviewScreen({ navigation, route }) {
           </Pressable>
           {transcriptExpanded && (
             <View style={styles.cardBody}>
+              {audioUri && (
+                <Pressable
+                  style={styles.audioPlayRow}
+                  onPress={async () => {
+                    if (audioStatus.playing) {
+                      audioPlayer.pause();
+                    } else {
+                      try { await audioPlayer.seekTo(0); } catch {}
+                      audioPlayer.play();
+                    }
+                  }}
+                >
+                  <View style={styles.audioPlayIcon}>
+                    <Feather
+                      name={audioStatus.playing ? 'pause' : 'play'}
+                      size={14}
+                      color={colors.blue}
+                    />
+                  </View>
+                  <Text style={styles.audioPlayLabel}>
+                    {audioStatus.playing ? 'Pause recording' : 'Play recording'}
+                  </Text>
+                  <Text style={styles.audioDuration}>{report.audioDuration}</Text>
+                </Pressable>
+              )}
               <Text style={styles.transcriptText}>{report.transcript}</Text>
             </View>
           )}
@@ -282,7 +367,36 @@ const styles = StyleSheet.create({
     letterSpacing: 0.48,
     textTransform: 'uppercase',
   },
-  cardBody: { paddingHorizontal: 14, paddingBottom: 14 },
+  cardBody: { paddingHorizontal: 14, paddingBottom: 14, paddingTop: 10 },
+  audioPlayRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: colors.blueTint,
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    marginBottom: 10,
+  },
+  audioPlayIcon: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: colors.blue,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  audioPlayLabel: {
+    flex: 1,
+    fontFamily: fonts.inter.semiBold,
+    fontSize: 12,
+    color: colors.blue,
+  },
+  audioDuration: {
+    fontFamily: fonts.mono.regular,
+    fontSize: 11,
+    color: colors.textTertiary,
+  },
   transcriptText: {
     fontFamily: fonts.mono.regular,
     fontSize: 12,
